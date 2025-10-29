@@ -1,99 +1,170 @@
 #include <stdio.h>
+#include <string.h>
+typedef struct {
+    char estado[3];         // Ex: "SP", "RJ"
+    char codigo_carta[5];   // Ex: "C-01"
+    char nome_cidade[50];
+    int populacao;          // População (int)
+    float area;             // Área em km² (float)
+    float pib;              // PIB em bilhões de R$ (float)
+    int pontos_turisticos;
+    float densidade_populacional;
+    float pib_per_capita;
+} Carta;
 
-int main() {
-    // Declaração de variáveis para a Carta 1
-    char estado1;
-    char codigo1[4];
-    char nomeCidade1[50];
-    unsigned long int populacao1;
-    float area1;
-    float pib1;
-    int pontosTuristicos1;
-    float densidadePopulacional1;
-    float pibPerCapita1;
-    float superPoder1;
+void calcular_atributos_derivados(Carta *carta) {
+    if (carta->area > 0) {
+        carta->densidade_populacional = (float)carta->populacao / carta->area;
+    } else {
+        carta->densidade_populacional = 0.0;
+    }
+    if (carta->populacao > 0) {
+        carta->pib_per_capita = (carta->pib * 1000000000.0) / (float)carta->populacao;
+    } else {
+        carta->pib_per_capita = 0.0;
+    }
+}
 
-    // Declaração de variáveis para a Carta 2
-    char estado2;
-    char codigo2[4];
-    char nomeCidade2[50];
-    unsigned long int populacao2;
-    float area2;
-    float pib2;
-    int pontosTuristicos2;
-    float densidadePopulacional2;
-    float pibPerCapita2;
-    float superPoder2;
+// *** VARIÁVEL GLOBAL DE CONTROLE DE COMPARAÇÃO ***
+// Esta variável define qual atributo será comparado entre as cartas.
+// 1: População (int)
+// 2: Área (float)
+// 3: PIB (float)
+// 4: Densidade Populacional (float) - OBS: MENOR valor vence!
+// 5: PIB per capita (float)
+const int ATRIBUTO_COMPARACAO = 3; // Escolha inicial: 3 (PIB)
+void comparar_cartas(Carta carta1, Carta carta2) {
+    float valor1 = 0.0;
+    float valor2 = 0.0;
+    char nome_atributo[50];
+    int menor_valor_vence = 0; // 0 = Maior valor vence (padrão) | 1 = Menor valor vence
 
-    // --- Atribuição dos dados da Carta 1 (São Paulo) ---
-    estado1 = 'A';
-    strcpy(codigo1, "A01");
-    strcpy(nomeCidade1, "Sao Paulo");
-    populacao1 = 12325000;
-    area1 = 1521.11;
-    pib1 = 699.28;
-    pontosTuristicos1 = 50;
+    // --- 1. Definir o Atributo a ser Comparado e seus Valores ---
+    switch (ATRIBUTO_COMPARACAO) {
+        case 1:
+            strcpy(nome_atributo, "População");
+            valor1 = (float)carta1.populacao;
+            valor2 = (float)carta2.populacao;
+            break;
+        case 2:
+            strcpy(nome_atributo, "Área (km²)");
+            valor1 = carta1.area;
+            valor2 = carta2.area;
+            break;
+        case 3:
+            strcpy(nome_atributo, "PIB (Bilhões R$)");
+            valor1 = carta1.pib;
+            valor2 = carta2.pib;
+            break;
+        case 4:
+            strcpy(nome_atributo, "Densidade Populacional (hab/km²)");
+            valor1 = carta1.densidade_populacional;
+            valor2 = carta2.densidade_populacional;
+            menor_valor_vence = 1; // REQUISITO: Para Densidade, o menor valor vence.
+            break;
+        case 5:
+            strcpy(nome_atributo, "PIB per Capita (R$)");
+            valor1 = carta1.pib_per_capita;
+            valor2 = carta2.pib_per_capita;
+            break;
+        default:
+            printf("\nERRO: Atributo de comparação não definido ou inválido.\n");
+            return;
+    }
 
-    // --- Atribuição dos dados da Carta 2 (Rio de Janeiro) ---
-    estado2 = 'B';
-    strcpy(codigo2, "B02");
-    strcpy(nomeCidade2, "Rio de Janeiro");
-    populacao2 = 6748000;
-    area2 = 1200.25;
-    pib2 = 300.50;
-    pontosTuristicos2 = 30;
+    // --- 2. Exibir o Cabeçalho da Comparação ---
+    printf("\n--- Comparação de Cartas (Atributo: %s) ---\n", nome_atributo);
+    char formato[20] = "%.2f";
+    if (ATRIBUTO_COMPARACAO == 1) {
+        strcpy(formato, "%.0f"); 
+    } else if (ATRIBUTO_COMPARACAO == 5) {
+        strcpy(formato, "%.2f");
+    }
 
-    // --- Cálculos ---
-
-    // Carta 1
-    densidadePopulacional1 = (float)populacao1 / area1;
-    pibPerCapita1 = (pib1 * 1000000000.0) / populacao1;
-    superPoder1 = (float)populacao1 + area1 + (pib1 * 1000000000.0) + pontosTuristicos1 + pibPerCapita1 + (1.0 / densidadePopulacional1);
-
-    // Carta 2
-    densidadePopulacional2 = (float)populacao2 / area2;
-    pibPerCapita2 = (pib2 * 1000000000.0) / populacao2;
-    superPoder2 = (float)populacao2 + area2 + (pib2 * 1000000000.0) + pontosTuristicos2 + pibPerCapita2 + (1.0 / densidadePopulacional2);
-
-    // --- Exibição das Cartas e Cálculos ---
-
-    printf("Carta 1:\n");
-    printf("Estado: %c\n", estado1);
-    printf("Codigo: %s\n", codigo1);
-    printf("Nome da Cidade: %s\n", nomeCidade1);
-    printf("Populacao: %lu\n", populacao1);
-    printf("Area: %.2f km2\n", area1);
-    printf("PIB: %.2f bilhoes de reais\n", pib1);
-    printf("Numero de Pontos Turisticos: %d\n", pontosTuristicos1);
-    printf("Densidade Populacional: %.2f hab/km2\n", densidadePopulacional1);
-    printf("PIB per Capita: %.2f reais\n", pibPerCapita1);
-    printf("Super Poder: %.2f\n", superPoder1);
-
+    printf("Carta 1 - %s (%s): ", carta1.nome_cidade, carta1.estado);
+    printf(formato, valor1);
+    
+    printf("\nCarta 2 - %s (%s): ", carta2.nome_cidade, carta2.estado);
+    printf(formato, valor2);
     printf("\n");
 
-    printf("Carta 2:\n");
-    printf("Estado: %c\n", estado2);
-    printf("Codigo: %s\n", codigo2);
-    printf("Nome da Cidade: %s\n", nomeCidade2);
-    printf("Populacao: %lu\n", populacao2);
-    printf("Area: %.2f km2\n", area2);
-    printf("PIB: %.2f bilhoes de reais\n", pib2);
-    printf("Numero de Pontos Turisticos: %d\n", pontosTuristicos2);
-    printf("Densidade Populacional: %.2f hab/km2\n", densidadePopulacional2);
-    printf("PIB per Capita: %.2f reais\n", pibPerCapita2);
-    printf("Super Poder: %.2f\n", superPoder2);
+    // --- 3. Implementar a Lógica de Decisão (if / if-else) ---
 
-    printf("\n--- Comparacao de Cartas ---\n");
+    // Lógica para quando o MAIOR valor vence (População, Área, PIB, PIB per capita)
+    if (menor_valor_vence == 0) {
+        if (valor1 > valor2) {
+            printf("\nResultado: Carta 1 (%s) venceu!\n", carta1.nome_cidade);
+        } else if (valor2 > valor1) {
+            printf("\nResultado: Carta 2 (%s) venceu!\n", carta2.nome_cidade);
+        } else {
+            // Caso de empate
+            printf("\nResultado: Empate! As cartas têm o mesmo valor no atributo %s.\n", nome_atributo);
+        }
+    } 
+    // Lógica para quando o MENOR valor vence (Apenas Densidade Populacional)
+    else { // menor_valor_vence == 1
+        if (valor1 < valor2) {
+            printf("\nResultado: Carta 1 (%s) venceu!\n", carta1.nome_cidade);
+        } else if (valor2 < valor1) {
+            printf("\nResultado: Carta 2 (%s) venceu!\n", carta2.nome_cidade);
+        } else {
+            // Caso de empate
+            printf("\nResultado: Empate! As cartas têm o mesmo valor no atributo %s.\n", nome_atributo);
+        }
+    }
+    
+    printf("---------------------------------------------------\n");
+}
 
-    // --- Comparação e Exibição dos Resultados ---
+int main() {
+    // --- 1. Cadastro das Cartas (Reaproveitando o código do desafio anterior) ---
 
-    printf("Populacao: Carta %d venceu (%d)\n", (populacao1 > populacao2) ? 1 : 2, (populacao1 > populacao2) ? 1 : 0);
-    printf("Area: Carta %d venceu (%d)\n", (area1 > area2) ? 1 : 2, (area1 > area2) ? 1 : 0);
-    printf("PIB: Carta %d venceu (%d)\n", (pib1 > pib2) ? 1 : 2, (pib1 > pib2) ? 1 : 0);
-    printf("Pontos Turisticos: Carta %d venceu (%d)\n", (pontosTuristicos1 > pontosTuristicos2) ? 1 : 2, (pontosTuristicos1 > pontosTuristicos2) ? 1 : 0);
-    printf("Densidade Populacional: Carta %d venceu (%d)\n", (densidadePopulacional1 < densidadePopulacional2) ? 1 : 2, (densidadePopulacional1 < densidadePopulacional2) ? 1 : 0);
-    printf("PIB per Capita: Carta %d venceu (%d)\n", (pibPerCapita1 > pibPerCapita2) ? 1 : 2, (pibPerCapita1 > pibPerCapita2) ? 1 : 0);
-    printf("Super Poder: Carta %d venceu (%d)\n", (superPoder1 > superPoder2) ? 1 : 2, (superPoder1 > superPoder2) ? 1 : 0);
+    // Carta 1: Exemplo de uma cidade grande
+    Carta carta_sp = {
+        .estado = "SP",
+        .codigo_carta = "C-01",
+        .nome_cidade = "São Paulo",
+        .populacao = 12396372,
+        .area = 1521.1,
+        .pib = 763.8,
+        .pontos_turisticos = 50
+    };
+
+    // Carta 2: Exemplo de uma capital com menor população e área
+    Carta carta_rj = {
+        .estado = "RJ",
+        .codigo_carta = "C-02",
+        .nome_cidade = "Rio de Janeiro",
+        .populacao = 6775561,
+        .area = 1200.3,
+        .pib = 370.0,
+        .pontos_turisticos = 45
+    };
+    
+    // --- 2. Cálculo dos Atributos Derivados ---
+    calcular_atributos_derivados(&carta_sp);
+    calcular_atributos_derivados(&carta_rj);
+
+    // --- 3. Exibir os Dados Completos (Opcional, mas útil para conferência) ---
+    printf("--- Dados das Cartas ---\n");
+    printf("Carta 1 (%s): %s\n", carta_sp.estado, carta_sp.nome_cidade);
+    printf("  População: %d\n", carta_sp.populacao);
+    printf("  Área: %.2f km²\n", carta_sp.area);
+    printf("  PIB: R$ %.2f Bilhões\n", carta_sp.pib);
+    printf("  Densidade Populacional: %.2f hab/km²\n", carta_sp.densidade_populacional);
+    printf("  PIB per Capita: R$ %.2f\n", carta_sp.pib_per_capita);
+    printf("\n");
+    printf("Carta 2 (%s): %s\n", carta_rj.estado, carta_rj.nome_cidade);
+    printf("  População: %d\n", carta_rj.populacao);
+    printf("  Área: %.2f km²\n", carta_rj.area);
+    printf("  PIB: R$ %.2f Bilhões\n", carta_rj.pib);
+    printf("  Densidade Populacional: %.2f hab/km²\n", carta_rj.densidade_populacional);
+    printf("  PIB per Capita: R$ %.2f\n", carta_rj.pib_per_capita);
+    printf("\n");
+
+    // --- 4. Comparação da Carta (Foco do desafio) ---
+    // A função comparar_cartas usará o valor da constante ATRIBUTO_COMPARACAO (3: PIB)
+    comparar_cartas(carta_sp, carta_rj);
 
     return 0;
 }
